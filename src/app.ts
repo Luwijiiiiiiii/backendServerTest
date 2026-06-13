@@ -2,13 +2,13 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { connectToMongo } from "./utils/mongo";
 import router from "./routes";
 import { isDev } from "./config";
 import setup from "./setup";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { prisma } from "./utils/prisma";
 
 const app = express();
 
@@ -23,21 +23,22 @@ app.use(
 
 app.use(express.json());
 
-// Set up rate limiting middleware
+// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
 
 if (!isDev) app.use(limiter);
 
-// Set up security headers
+// Security
 app.use(helmet());
 app.disable("x-powered-by");
 
-// Use router for routing
+// Routes
 app.use("/api", router);
 
+// HTTP + Socket.io
 const server = createServer(app);
 
 export const io = new Server(server, {
@@ -49,17 +50,23 @@ export const io = new Server(server, {
 });
 
 import events from "./events";
-
 events(io);
 
-// Connect to MongoDB
-connectToMongo()
-  .then(() => {
-    // Run setup
+// ✅ Prisma connection (replaces Mongo)
+async function start() {
+  try {
+    await prisma.$connect();
+    console.log("✅ Database connected (Prisma)");
+
+    // Run setup logic
     setup();
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+
+  } catch (err) {
+    console.error("❌ Database connection failed:", err);
+    process.exit(1);
+  }
+}
+
+start();
 
 export default server;

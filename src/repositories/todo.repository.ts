@@ -1,39 +1,47 @@
-import { ObjectId } from "mongodb";
-import { MOrganization, TTodo, TTodoUpdateOptions } from "../models/todo.model";
-import { getDB } from "../utils/mongo";
+import { prisma } from "../utils/prisma";
 
 export default class TodoRepo {
-  static collection() {
-    return getDB().collection("organizations");
+  static async createTask(data: {
+    title: string;
+    content?: string;
+  }) {
+    return await prisma.todo.create({
+      data: {
+        title: data.title,
+        content: data.content,
+      },
+    });
   }
 
-  static async createTask(organization: TTodo) {
-    return this.collection().insertOne(new MOrganization(organization));
+  static async update(data: {
+    id: string;
+    title?: string;
+    content?: string;
+  }) {
+    return await prisma.todo.update({
+      where: { id: data.id },
+      data: {
+        title: data.title,
+        content: data.content,
+      },
+    });
   }
 
-  static async update(organization: TTodoUpdateOptions) {
-    try {
-      organization._id = new ObjectId(organization._id);
-    } catch (error) {
-      return Promise.reject("Invalid organization id.");
-    }
-    const { title, description } = organization;
-    const updatedAt = new Date();
-    return this.collection().updateOne({ _id: organization._id }, { $set: { title, description, updatedAt } });
+  static async delete(id: string) {
+    await prisma.todo.delete({
+      where: { id },
+    });
+
+    return "Deleted successfully";
   }
 
-  static async delete(_id: string | ObjectId) {
-    try {
-      _id = new ObjectId(_id);
-    } catch (error) {
-      return Promise.reject("Invalid organization id.");
-    }
+  static async findAll() {
+    return await prisma.todo.findMany();
+  }
 
-    try {
-      await this.collection().deleteOne({ _id: new ObjectId(_id) });
-      return Promise.resolve("Successfully deleted organization.");
-    } catch (error) {
-      return Promise.reject("Server internal error.");
-    }
+  static async findById(id: string) {
+    return await prisma.todo.findUnique({
+      where: { id },
+    });
   }
 }
