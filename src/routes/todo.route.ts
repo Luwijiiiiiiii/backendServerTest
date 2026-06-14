@@ -8,5 +8,5 @@ router.get("/", TodoCtrl.getAll);
 router.get("/:id", TodoCtrl.getById);
 router.put("/:id", TodoCtrl.update);
 router.delete("/:id", TodoCtrl.delete);
-
+router.patch("/:id/toggle", TodoCtrl.toggle);
 export default router;

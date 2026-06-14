@@ -70,4 +70,15 @@ export default class TodoCtrl {
       return res.status(500).json({ message: error });
     }
   }
+  static async toggle(req: Request, res: Response) {
+  const id = req.params.id;
+  const { isDone } = req.body;
+
+  try {
+    const result = await TodoSvc.toggle(id, isDone);
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ message: error });
+    }
+  }
 }

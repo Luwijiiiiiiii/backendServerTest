@@ -44,4 +44,10 @@ export default class TodoRepo {
       where: { id },
     });
   }
+  static async toggle(id: string, isDone: boolean) {
+  return await prisma.todo.update({
+    where: { id },
+    data: { isDone },
+    });
+  }
 }

@@ -24,4 +24,7 @@ export default class TodoSvc {
   static findById(id: string) {
     return TodoRepo.findById(id);
   }
+  static toggle(id: string, isDone: boolean) {
+  return TodoRepo.toggle(id, isDone);
+}
 }
